@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E9F6E">
+<title>Stock &amp; Belanja Dapur</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0E9F6E;
+               font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  /* width:1px + min-width:100% memaksa iOS Safari memakai lebar layar (bug iframe yang melebar mengikuti isi) */
+  #app { position: fixed; top: 0; left: 0; width: 1px; min-width: 100%; height: 100vh; height: 100dvh; border: 0; display: block; background: #fff; }
+  #loading { position: fixed; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center;
+             gap: 14px; text-align: center; padding: 24px; color: #fff;
+             background: linear-gradient(135deg, #0E9F6E, #08724F); transition: opacity .4s, visibility .4s; }
+  #loading.done { opacity: 0; visibility: hidden; }
+  .spinner { width: 42px; height: 42px; border-radius: 50%; border: 4px solid rgba(255,255,255,.25); border-top-color: #fff; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loadText { font-weight: 600; }
+  #help { display: none; font-size: 14px; line-height: 1.5; max-width: 340px; }
+  #help a { color: #fff; font-weight: 700; }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+</style>
+</head>
+<body>
+
+<div id="loading" role="status">
+  <div class="spinner" id="spin" aria-hidden="true"></div>
+  <div id="loadText">Memuat…</div>
+  <div id="help"></div>
+</div>
+
+<noscript>Aplikasi ini membutuhkan JavaScript. Aktifkan JavaScript di browser Anda.</noscript>
+
+<script>
+(function () {
+  // ===== GANTI DENGAN LINK WEB APP ANDA (yang berakhiran /exec) =====
+  var APP_URL = 'GANTI_DENGAN_LINK_EXEC_ANDA';
+  // ==================================================================
+
+  var loading = document.getElementById('loading');
+  var text = document.getElementById('loadText');
+  var help = document.getElementById('help');
+
+  function showHelp(html, hideSpinner) {
+    if (hideSpinner) document.getElementById('spin').style.display = 'none';
+    help.style.display = 'block';
+    help.innerHTML = html;           // hanya teks tetap dari file ini, bukan input pengguna
+  }
+
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(APP_URL)) {
+    text.textContent = 'Link aplikasi belum diatur';
+    showHelp('Buka file <b>index.html</b> ini, cari baris <b>APP_URL</b>, lalu ganti isinya dengan link web app Anda yang berakhiran <b>/exec</b>.', true);
+    return;
+  }
+
+  var frame = document.createElement('iframe');
+  frame.id = 'app';
+  frame.title = 'Stock & Belanja Dapur';
+  var loaded = false;
+  frame.addEventListener('load', function () {
+    loaded = true;
+    loading.classList.add('done');
+  });
+  frame.src = APP_URL;
+  document.body.appendChild(frame);
+
+  // Jika terlalu lama, tawarkan membuka langsung
+  setTimeout(function () {
+    if (loaded) return;
+    showHelp('Memuat lebih lama dari biasanya. Periksa koneksi internet Anda, atau <a href="' + APP_URL + '">buka aplikasi langsung</a>.', false);
+  }, 12000);
+})();
+</script>
+</body>
+</html>

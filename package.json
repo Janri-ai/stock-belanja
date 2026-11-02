@@ -1,0 +1,12 @@
+{
+  "name": "stock-belanja-dapur",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplikasi web Stock & Belanja Dapur (Google Apps Script + Sheets + Drive) beserta tes otomatisnya",
+  "scripts": {
+    "test": "node tests/run-all.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.45.0"
+  }
+}
