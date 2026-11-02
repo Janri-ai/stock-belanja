@@ -1,7 +1,10 @@
 const P = require('./paths.js');
 const fs = require('fs'), assert = require('assert');
 const { chromium } = require('playwright');
-const html = fs.readFileSync(P.WRAPPER, 'utf8');
+const live = fs.readFileSync(P.WRAPPER, 'utf8');
+const m = /var APP_URL = '([^']*)';/.exec(live);
+assert(m && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(m[1]), 'APP_URL di docs/index.html harus link /exec yang valid');
+const html = live.replace(m[0], "var APP_URL = 'GANTI_DENGAN_LINK_EXEC_ANDA';");
 (async () => {
   const b = await chromium.launch();
   const ctx = await b.newContext({ viewport: { width: 390, height: 780 } });
