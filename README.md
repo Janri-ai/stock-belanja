@@ -32,6 +32,12 @@ Perubahan kode berikutnya: tempel ulang, lalu **Deploy → Manage deployments �
 - **Saldo Stok**: rekap per bulan (Awal, Masuk, Keluar, Saldo). Ketuk barang → **Kartu Stok** (seperti buku kas).
 - Saldo tidak bisa minus: pengeluaran melebihi stok akan ditolak.
 
+## Pasang di HP seperti aplikasi
+Alamat: **https://janri-ai.github.io/stock-belanja/**
+- **Android (Chrome):** buka alamat itu, ketuk tombol **Pasang aplikasi** di kiri bawah (atau menu ⋮ → **Instal aplikasi** / **Tambahkan ke layar utama**) → **Instal**.
+- **iPhone/iPad (Safari):** buka alamat itu, ketuk **Bagikan** ⬆ → **Tambahkan ke Layar Utama** → **Tambah**.
+Ikon **Stok Dapur** muncul di layar utama dan terbuka layar penuh tanpa bilah alamat. Ikon dibuat dari `docs/icon.svg` dengan `node tests/make-icons.js`.
+
 ## Menjalankan tes
 ```
 npm install

@@ -6,6 +6,7 @@ const tests = [
   ['Backend: barang, masuk/keluar, saldo, struk', 'stock.test.js'],
   ['Backend: request belanja', 'request.test.js'],
   ['Halaman pembungkus GitHub Pages', 'wrapper.test.js'],
+  ['Pasang sebagai aplikasi HP (PWA)', 'pwa.test.js'],
   ['UI: login, barang, transaksi, kartu stok', 'ui-stock.test.js'],
   ['UI: barang rusak/expired', 'ui-rusak.test.js'],
   ['UI: request belanja', 'ui-request.test.js'],

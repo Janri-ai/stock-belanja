@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0E9F6E">
 <title>Stock &amp; Belanja Dapur</title>
+<!-- agar bisa dipasang sebagai aplikasi di HP -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Stok Dapur">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
   html, body { margin: 0; height: 100%; background: #0E9F6E;
                font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
@@ -20,6 +28,22 @@
   #help { display: none; font-size: 14px; line-height: 1.5; max-width: 340px; }
   #help a { color: #fff; font-weight: 700; }
   @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+
+  /* tombol "Pasang aplikasi" (muncul hanya bila browser mendukung & belum terpasang) */
+  #install { position: fixed; left: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 3; display: flex; align-items: center;
+             gap: 4px; background: #0F2A1E; color: #fff; border-radius: 999px; box-shadow: 0 6px 20px rgba(0,0,0,.3); padding: 4px 4px 4px 6px;
+             max-width: calc(100vw - 24px); }
+  #install[hidden], #iosHelp[hidden] { display: none; }
+  #install button { border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; min-height: 40px; }
+  #btnInstall { font-weight: 700; font-size: 14px; padding: 0 10px; display: flex; align-items: center; gap: 8px; }
+  #btnInstall img { width: 26px; height: 26px; border-radius: 7px; }
+  #btnInstallX { font-size: 20px; width: 40px; opacity: .8; }
+  #iosHelp { position: fixed; inset: 0; z-index: 4; background: rgba(5,35,22,.55); display: flex; align-items: flex-end; justify-content: center; }
+  #iosHelp .sheet { background: #fff; color: #15291F; width: min(420px, 100%); border-radius: 20px 20px 0 0; padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+                    font-size: 15px; line-height: 1.5; }
+  #iosHelp h2 { margin: 0 0 8px; font-size: 18px; }
+  #iosHelp ol { margin: 0 0 14px; padding-left: 22px; }
+  #iosHelp button { width: 100%; min-height: 44px; border: 0; border-radius: 12px; background: #0E9F6E; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -28,6 +52,23 @@
   <div class="spinner" id="spin" aria-hidden="true"></div>
   <div id="loadText">Memuat…</div>
   <div id="help"></div>
+</div>
+
+<div id="install" hidden>
+  <button type="button" id="btnInstall"><img src="icon-192.png" alt=""> Pasang aplikasi</button>
+  <button type="button" id="btnInstallX" aria-label="Tutup">×</button>
+</div>
+
+<div id="iosHelp" hidden role="dialog" aria-modal="true" aria-labelledby="iosHelpTitle">
+  <div class="sheet">
+    <h2 id="iosHelpTitle">Pasang di iPhone / iPad</h2>
+    <ol>
+      <li>Ketuk tombol <b>Bagikan</b> (kotak dengan panah ke atas ⬆) di bawah/atas layar Safari.</li>
+      <li>Gulir lalu pilih <b>Tambahkan ke Layar Utama</b> (Add to Home Screen).</li>
+      <li>Ketuk <b>Tambah</b>. Ikon <b>Stok Dapur</b> muncul di layar utama.</li>
+    </ol>
+    <button type="button" id="iosHelpOk">Mengerti</button>
+  </div>
 </div>
 
 <noscript>Aplikasi ini membutuhkan JavaScript. Aktifkan JavaScript di browser Anda.</noscript>
@@ -65,11 +106,49 @@
   frame.src = APP_URL;
   document.body.appendChild(frame);
 
+  setupInstall();
+
   // Jika terlalu lama, tawarkan membuka langsung
   setTimeout(function () {
     if (loaded) return;
     showHelp('Memuat lebih lama dari biasanya. Periksa koneksi internet Anda, atau <a href="' + APP_URL + '">buka aplikasi langsung</a>.', false);
   }, 12000);
+
+  /* ---------- pasang sebagai aplikasi (PWA) ---------- */
+  function setupInstall() {
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* tidak wajib */ });
+    }
+    var box = document.getElementById('install'), deferred = null;
+    var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    function dismissed() { try { return Date.now() - Number(localStorage.getItem('installTutup') || 0) < 7 * 864e5; } catch (e) { return false; } }
+    if (standalone || dismissed()) return;   // sudah terpasang, atau ditutup < 7 hari lalu
+
+    // Android / Chrome / Edge: browser memberi tahu bila aplikasi bisa dipasang
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferred = e;
+      box.hidden = false;
+    });
+    window.addEventListener('appinstalled', function () { box.hidden = true; });
+    // iPhone/iPad: tidak ada tombol otomatis, tampilkan petunjuk
+    if (ios) box.hidden = false;
+
+    document.getElementById('btnInstall').addEventListener('click', function () {
+      if (deferred) {
+        deferred.prompt();
+        deferred.userChoice.then(function () { deferred = null; box.hidden = true; });
+      } else if (ios) {
+        document.getElementById('iosHelp').hidden = false;
+      }
+    });
+    document.getElementById('iosHelpOk').addEventListener('click', function () { document.getElementById('iosHelp').hidden = true; });
+    document.getElementById('btnInstallX').addEventListener('click', function () {
+      box.hidden = true;
+      try { localStorage.setItem('installTutup', String(Date.now())); } catch (e) { /* abaikan */ }
+    });
+  }
 })();
 </script>
 </body>
